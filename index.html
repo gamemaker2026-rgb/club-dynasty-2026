@@ -58,7 +58,7 @@
   const base=()=>({stage:'landing',season:2026,week:1,day:'월요일',profile:{name:'',age:'',height:'',gender:'선택 안 함',career:'',type:'',photo:'',avatar:'a1'},setupError:'',startBudget:{operating:0,transfer:0,infrastructure:0},budgetPreset:'balanced',budgetError:'',marketLeague:'L2',clubId:'l2_01',league:'L2',view:'home',leagueView:'L2',cash:0,transfer:0,wageCap:0,wages:0,infrastructure:0,monthly:0,board:55,fans:55,manager:60,unity:60,reputation:48,momentum:0,points:0,squad:seedSquad(),targets:seedTargets(),staff:seedStaff(),projects:seedProjects(),relations:{chair:58,cfo:54,manager:62,td:57,captain:66,agent:42,fans:61,press:48},delegations:{scout:true,finance:false,commercial:true,youth:true},ticket:'standard',sponsor:'none',news:[],log:[],lastMatch:null,selectedPlayer:'f7',selectedTarget:'t1',selectedProject:'youth',selectedStaff:'s1',squadTab:'first',targetRegion:'ALL',targetType:'ALL',targetPage:0,staffDepartment:'ALL',scoutScope:'대한민국',seasonSummary:null,cinematic:null,managerCandidate:{name:'최서진',rating:77},personal:{cash:120,home:'club_suite',shop:[],lastGiftWeek:0,investments:[],investmentLog:[],savedSlots:{}}});
   const normalize=x=>{if(!x?.stage)return null;x.profile={name:'',age:'',height:'',gender:'선택 안 함',career:'',type:'',photo:'',avatar:'a1',...(x.profile||{})};x.startBudget={operating:0,transfer:0,infrastructure:0,...(x.startBudget||{})};x.setupError='';x.budgetError='';x.budgetPreset=x.budgetPreset||'balanced';x.view=x.view||'home';x.cinematic=x.cinematic||null;x.managerCandidate=x.managerCandidate||{name:'최서진',rating:77};return x};
 function ensureCore(){if(!S)return;S.squad=Array.isArray(S.squad)&&S.squad.length?S.squad:seedSquad();S.targets=Array.isArray(S.targets)&&S.targets.length?S.targets:seedTargets();S.staff=Array.isArray(S.staff)&&S.staff.length?S.staff:seedStaff();S.projects=Array.isArray(S.projects)&&S.projects.length?S.projects:seedProjects();S.campus={active:'office',...(S.campus||{})};S.assistant={lastAction:'이번 주 우선 안건을 정리했습니다.',deferred:0,...(S.assistant||{})};S.executive={hiredId:null,filter:'ALL',selectedId:'ea_f15',open:false,lastAction:'전속 비서를 채용하면 선수·감독·인터뷰·일정을 호출할 수 있습니다.',interest:0,relationStatus:'전속 비서',lastPersonalWeek:0,receipt:null,...(S.executive||{})};S.personal={cash:120,home:'club_suite',shop:[],lastGiftWeek:0,investments:[],investmentLog:[],savedSlots:{},...(S.personal||{})};const prior=S.assistants||[];S.assistants=seedAssistants().map(c=>({...c,...prior.find(x=>x.id===c.id)}));const oldPeople=S.people||[];S.people=seedPeople().map(p=>({...p,...oldPeople.find(x=>x.id===p.id)}));S.peopleState={selected:'manager',lastPersonalWeek:0,dates:{},relations:{},...(S.peopleState||{})};S.warRoom={deadline:7,pressure:0,...(S.warRoom||{})};S.life={home:'club_suite',station:false,subscribers:0,adRevenue:0,shop:[],...(S.life||{})};S.squad.forEach(p=>{p.promiseWeeks=Number(p.promiseWeeks)||0;p.promiseStatus=p.promiseStatus||'미확인';p.photo=p.photo||'assets/profile_player.jpg';p.gender=p.gender||'남성';const n=Number(String(p.id||'').replace(/\D/g,''))||1,seedAge=p.squad==='youth'?16+(n-1)%4:p.squad==='reserve'?19+(n-1)%7:22+(n-1)%12,age=Number(p.age),needsYouthRepair=p.squad==='youth'&&(age<16||age>19),needsReserveRepair=p.squad==='reserve'&&age===25;p.age=(!Number.isFinite(age)||needsYouthRepair||needsReserveRepair)?seedAge:age});S.staff.forEach(p=>{p.interest=Number.isFinite(p.interest)?p.interest:46;p.photo=p.photo||'assets/profile_manager_staff.jpg';p.gender=p.gender||(/하윤|리아|하린|세라/.test(p.name)?'여성':'남성');p.age=Math.max(25,p.age||32)});}
-  const readState=key=>{try{return normalize(JSON.parse(localStorage.getItem(key)||'null'))}catch(e){return null}},load=()=>readState(KEY)||readState(LEGACY_KEY),loadDraft=()=>readState(DRAFT_KEY),save=()=>localStorage.setItem(KEY,JSON.stringify(S)),saveDraft=()=>localStorage.setItem(DRAFT_KEY,JSON.stringify(S)),clearDraft=()=>localStorage.removeItem(DRAFT_KEY),persist=()=>S?.stage==='setup'?saveDraft():save();
+  const readState=key=>{try{return normalize(JSON.parse(localStorage.getItem(key)||'null'))}catch(e){return null}},load=()=>readState(KEY)||readState(LEGACY_KEY),loadDraft=()=>readState(DRAFT_KEY),save=()=>localStorage.setItem(S?.stage==='setup'?DRAFT_KEY:KEY,JSON.stringify(S)),saveDraft=()=>localStorage.setItem(DRAFT_KEY,JSON.stringify(S)),clearDraft=()=>localStorage.removeItem(DRAFT_KEY),persist=()=>S?.stage==='setup'?saveDraft():save();
   const manualKey=n=>`${KEY}_manual_${n}`,manualSlot=n=>{try{return JSON.parse(localStorage.getItem(manualKey(n))||'null')}catch(e){return null}},manualLabel=n=>{const x=manualSlot(n);return x?`${x.season}시즌 ${x.week}주차 · ${x.profile?.name||'구단주'}`:'비어 있음'};
   const resizePhoto=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const limit=360,scale=Math.min(1,limit/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas.toDataURL('image/jpeg',.82))};img.src=reader.result};reader.readAsDataURL(file)});
   const news=(title,text,kind='info')=>{S.news.unshift({week:S.week,season:S.season,title,text,kind});S.news=S.news.slice(0,60);S.log.unshift({week:S.week,season:S.season,title,text})};
@@ -1227,6 +1227,64 @@ function ensureCore(){if(!S)return;S.squad=Array.isArray(S.squad)&&S.squad.lengt
   ownerCareerAccept=id=>{ownerCareerAcceptBeforeFederation(id);const f=ensureFederationState();if(f.status==='president'){f.fairness=cap(f.fairness+1);worldRemember('협회장 겸직 재취임',`새 구단주직 취임 뒤에도 독립 선발·예산 공개 원칙을 유지하기로 했습니다.`,'info');save();render()}};
   const faNationalTickBeforeGovernance=faNationalTick;
   faNationalTick=()=>{const f=ensureFederationState(),before=f.national.events.length;faNationalTickBeforeGovernance();if(f.status==='president'&&f.national.events.length>before){const event=f.national.events[0],delta=event.result==='승리'?3:event.result==='무승부'?0:-3;S.reputation=cap(S.reputation+delta);S.fans=cap(S.fans+Math.max(-2,Math.round(delta/2)));if(event.result==='패배')f.fairness=cap(f.fairness-1);news('협회장 겸직 리그 반응',`국가대표 ${event.result} 결과가 구단주 명예 ${delta>=0?'+':''}${delta}와 구단 팬 반응에 반영됐습니다.`,delta>=0?'gold':'bad');}}
-  S=load()||base();ensureWorldState();ensureFederationState();render();
+  const ENTRY_GATE_KEY='club_dynasty_2026_entry_gate_v1',ENTRY_BACKUP_KEY='club_dynasty_2026_before_new_entry_v1';
+  const renderBeforeEntryGate=render;
+  const QUICK_SAVE_SLOT='quick';
+  function quickSave(){
+    if(S?.stage!=='game')return;
+    localStorage.setItem(manualKey(QUICK_SAVE_SLOT),JSON.stringify(S));
+    news('빠른 저장 완료',`${S.season}시즌 ${S.week}주차 진행을 상단 빠른 저장에 기록했습니다.`,'info');
+    save();render();
+  }
+  function quickLoad(){
+    const saved=manualSlot(QUICK_SAVE_SLOT);
+    if(!saved){news('빠른 불러오기 보류','상단 빠른 저장 기록이 없습니다. 먼저 저장 버튼을 눌러 주세요.','bad');save();render();return;}
+    S=normalize(saved);ensureCore();S.executive.receipt=null;sessionStorage.setItem(ENTRY_GATE_KEY,'open');
+    news('빠른 불러오기 완료',`상단 빠른 저장의 ${S.season}시즌 ${S.week}주차 진행을 불러왔습니다.`,'gold');
+    save();render();
+  }
+  function mountQuickHeaderControls(){
+    if(S?.stage!=='game')return;
+    const actions=root.querySelector('.top-actions');
+    if(!actions||actions.querySelector('.quick-save-actions'))return;
+    const label=manualSlot(QUICK_SAVE_SLOT)?'저장됨':'빈 슬롯';
+    actions.insertAdjacentHTML('afterbegin',`<div class="quick-save-actions" style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;align-items:center"><button class="btn light" data-a="quick-save" style="min-height:34px;padding:7px 9px;font-size:10px">저장</button><button class="btn light" data-a="quick-load" style="min-height:34px;padding:7px 9px;font-size:10px">불러오기</button><button class="btn" data-a="fresh-entry" style="min-height:34px;padding:7px 9px;font-size:10px;background:#1b4d40;border-color:#d6ad55;color:#fff">새로하기</button><small style="width:100%;text-align:right;color:#567166;font-size:9px">빠른 슬롯 · ${label}</small></div>`);
+  }
+  function mountNewDynastyEntry(){
+    if(S?.stage==='game'){
+      const side=root.querySelector('.side-bottom');
+      if(side&&!side.querySelector('[data-a="fresh-entry"]'))side.insertAdjacentHTML('afterbegin','<button class="btn" data-a="fresh-entry" style="width:100%;margin:0 0 13px;background:#1b4d40;border-color:#d6ad55;color:#fff">↻ 처음부터 시작</button>');
+      const profileGrid=root.querySelector('.profile-grid');
+      if(profileGrid&&!root.querySelector('.new-dynasty-panel'))profileGrid.insertAdjacentHTML('afterend','<section class="panel new-dynasty-panel" style="margin-top:18px;border-top:3px solid #d6ad55"><div class="head" style="margin-top:0"><div><div class="eyebrow">NEW DYNASTY / SAVE-SAFE</div><h3>새 구단주 다이너스티</h3></div><small>기존 저장 유지</small></div><p>다른 구단주 프로필과 구단을 처음부터 선택해 새 커리어를 준비합니다. 인수를 확정하기 전까지 현재 다이너스티는 이 브라우저에 그대로 보관됩니다.</p><div class="actions"><button class="btn gold" data-a="fresh-entry">새 게임 시작</button></div></section>');
+    }
+    mountQuickHeaderControls();
+    if(S?.stage==='setup'&&load()?.stage==='game'&&!root.querySelector('.new-dynasty-draft-note')){
+      root.firstElementChild?.insertAdjacentHTML('afterbegin','<div class="new-dynasty-draft-note" style="max-width:1180px;margin:16px auto 0;padding:13px 16px;border-top:3px solid #d6ad55;background:#173f34;color:#fff;box-shadow:0 10px 22px rgba(0,0,0,.16)"><b>새 다이너스티 작성 중</b><span style="display:block;margin-top:4px;color:#d8e7e0;font-size:12px">기존 저장은 아직 유지됩니다. 새 구단 인수를 확정할 때만 현재 저장이 새 커리어로 바뀝니다.</span><button class="btn light" data-a="resume-saved" style="margin-top:10px">기존 다이너스티로 돌아가기</button></div>');
+    }
+  }
+  render=()=>{
+    if(!S)S=load()||base();
+    if(S.stage==='game'&&sessionStorage.getItem(ENTRY_GATE_KEY)!=='open'){landing();return;}
+    renderBeforeEntryGate();
+    mountNewDynastyEntry();
+  };
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-a]');if(!b)return;
+    if(b.dataset.a==='quick-save'){
+      e.preventDefault();e.stopImmediatePropagation();quickSave();
+    }else if(b.dataset.a==='quick-load'){
+      e.preventDefault();e.stopImmediatePropagation();quickLoad();
+    }else if(b.dataset.a==='fresh-entry'){
+      e.preventDefault();e.stopImmediatePropagation();const current=readState(KEY);if(current?.stage==='game')localStorage.setItem(ENTRY_BACKUP_KEY,JSON.stringify(current));clearDraft();S=base();S.stage='setup';S.isDraft=true;sessionStorage.setItem(ENTRY_GATE_KEY,'setup');saveDraft();render();
+    }else if(b.dataset.a==='resume-saved'){
+      e.preventDefault();e.stopImmediatePropagation();clearDraft();S=readState(KEY)||readState(ENTRY_BACKUP_KEY)||base();sessionStorage.setItem(ENTRY_GATE_KEY,'open');render();
+    }else if(b.dataset.a==='continue'){
+      sessionStorage.setItem(ENTRY_GATE_KEY,'open');
+      setTimeout(()=>render(),0);
+    }
+  },true);
+  const startCareerBeforeEntryGate=startCareer;
+  startCareer=()=>{startCareerBeforeEntryGate();if(S?.stage==='game'){sessionStorage.setItem(ENTRY_GATE_KEY,'open');render();}};
+  S=sessionStorage.getItem(ENTRY_GATE_KEY)==='setup'?(loadDraft()||load()||base()):(load()||base());ensureWorldState();ensureFederationState();render();
 })();
 </script></body></html>
