@@ -1185,7 +1185,7 @@
   render=()=>{if(!S)S=load()||base();ensureOwnerCareer();if(S.stage==='game'&&S.view==='ownercareer'){ownerCareerView();return;}renderBeforeOwnerCareer();};
   const titleBeforeOwnerCareer=title;
   title=v=>v==='ownercareer'?'구단주 생존 커리어':titleBeforeOwnerCareer(v);
-  root.addEventListener('click',e=>{const b=e.target.closest('[data-a="next"]');if(!b||S?.stage!=='game')return;e.preventDefault();e.stopImmediatePropagation();nextWeek();},true);
+  root.addEventListener('click',e=>{const b=e.target.closest('[data-a="next"]');if(!b||S?.stage!=='game')return;e.preventDefault();e.stopImmediatePropagation();const t=S.ownerTutorial;if(t?.active&&Number(t.step)===5){t.active=false;t.completed=true;t.dismissed=false;news('오너 데뷔 튜토리얼 완료','비서 안내를 따라 재정·선수단·이적·캠퍼스·일정과 첫 주 운영을 직접 확인했습니다. 이제 원하는 방식으로 구단을 운영하세요.','gold');}nextWeek();},true);
   root.addEventListener('click',e=>{const b=e.target.closest('[data-a="career"]');if(!b)return;const a=b.dataset.v.split(':');if(a[0]==='exit'&&a[1]==='review'){const c=ensureOwnerCareer();if(!c.pendingExit){c.pendingExit=true;save();render();}else ownerCareerExit('resign');}else if(a[0]==='business')ownerCareerBusiness(a[1]);else if(a[0]==='offer'&&a[1]==='negotiate')ownerCareerNegotiate(a[2]);else if(a[0]==='offer'&&a[1]==='accept')ownerCareerAccept(a[2]);else if(a[0]==='offer'&&a[1]==='decline'){const c=ensureOwnerCareer(),o=c.offers.find(x=>x.id===a[2]);if(o){o.status='declined';c.nextOfferWeek=S.week+2;save();render();}}});
   /* NATIONAL FOOTBALL FEDERATION — 가상 대한 축구연맹 회장 선거 */
   const FA_BLOCKS=[
@@ -1375,8 +1375,10 @@
     const b=e.target.closest('[data-a]');if(!b)return;
     if(b.dataset.a==='mobile-more-toggle'){
       e.preventDefault();e.stopImmediatePropagation();root.querySelector('.mobile-more-panel')?.classList.toggle('open');
+      if(S?.ownerTutorial?.active)setTimeout(()=>mountOwnerTutorial?.(),0);
     }else if(b.dataset.a==='mobile-more-close'){
       e.preventDefault();e.stopImmediatePropagation();root.querySelector('.mobile-more-panel')?.classList.remove('open');
+      if(S?.ownerTutorial?.active)setTimeout(()=>mountOwnerTutorial?.(),0);
     }
   },true);
   const clubRosterPreview=c=>{const squad=seedSquad(c.id).filter(p=>p.squad==='first'),staff=seedStaff(c.id);return `<section class="club-roster-modal" role="dialog" aria-modal="true" aria-label="${c.name} 가상 명단" style="position:fixed;inset:0;z-index:1200;background:rgba(7,25,20,.72);padding:28px;overflow:auto"><article class="panel" style="max-width:950px;margin:0 auto;background:#f8f6ef;color:#173128"><div class="head" style="margin-top:0"><div><div class="eyebrow">CLUB WORLD / VIRTUAL ROSTER</div><h2>${c.name}</h2><p>${c.history}</p></div><button class="btn light" data-a="clubchronicle-close">닫기</button></div><div class="info" style="margin:16px 0"><div>감독<b>${c.manager}</b></div><div>운영 책임자<b>${c.operator}</b></div><div>시즌 목표<b>${c.challenge}</b></div><div>1군<b>${squad.length}명</b></div></div><div class="table-wrap"><table><thead><tr><th>포지션</th><th>가상 선수</th><th>국적</th><th>나이</th><th>능력</th><th>역할</th></tr></thead><tbody>${squad.map(p=>`<tr><td>${p.pos}</td><td><b>${p.name}</b></td><td>${p.nationality}</td><td>${p.age}</td><td>${p.ability}</td><td>${p.role}</td></tr>`).join('')}</tbody></table></div><section class="panel" style="margin-top:16px;background:#e9efe9"><div class="head" style="margin-top:0"><h3>핵심 스태프</h3><small>가상 인물</small></div><div class="chips">${staff.slice(0,10).map(s=>`<span style="color:var(--ink);border-color:var(--line)">${s.role} · <b>${s.name}</b></span>`).join('')}</div></section><p style="margin-top:14px;color:#58635b">이 명단은 게임의 능력치·포지션·연령·선수 수를 변경하지 않고, 기존 데이터를 가상 이름으로 전환해 보여줍니다. 리저브 18명과 유스 20명도 같은 전환 규칙을 사용합니다.</p></article></section>`};
@@ -1516,9 +1518,51 @@
   const ownerTutorialMobileStyle=document.createElement('style');
   ownerTutorialMobileStyle.textContent=`@media(max-width:720px){.owner-tutorial{z-index:9999;align-items:flex-end;padding:0;background:rgba(8,24,20,.58)}.owner-tutorial-card{width:100%;max-height:none;overflow:visible;padding:14px 16px calc(14px + env(safe-area-inset-bottom));border-top-width:3px;box-shadow:0 -12px 34px rgba(0,0,0,.28)}.owner-tutorial-card .eyebrow{font-size:9px;letter-spacing:.1em}.owner-tutorial-progress{height:5px;margin:8px 0 10px}.owner-tutorial-assistant{padding:8px 10px;grid-template-columns:auto 1fr;gap:1px 7px}.owner-tutorial-assistant span{font-size:9px}.owner-tutorial-assistant b{font-size:12px}.owner-tutorial-assistant em{display:none}.owner-tutorial-card h2{margin:8px 0 3px;font-size:19px;line-height:1.25}.owner-tutorial-card p{display:none}.owner-tutorial-task{margin:8px 0 10px;padding:8px 10px}.owner-tutorial-task b{font-size:9px}.owner-tutorial-task span{margin-top:2px;font-size:14px;line-height:1.3}.owner-tutorial-card ol{display:none}.owner-tutorial-card .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.owner-tutorial-card .actions .btn{min-height:46px;padding:10px 7px;font-size:12px;line-height:1.2}.owner-tutorial-card .actions .btn.light{background:#fff;color:#17372f;border:1px solid #cdd5ce}}`;
   document.head.appendChild(ownerTutorialMobileStyle);
+  const ownerArrowGuideSteps=[
+    {view:'finance',title:'첫 결재는 예산입니다',task:'재정 메뉴를 눌러 운영·이적·인프라 예산을 확인하세요.',mobileTask:'하단 더보기에서 재정 메뉴를 눌러 예산을 확인하세요.',more:true},
+    {view:'squad',title:'선수단의 약속을 확인합니다',task:'선수단 메뉴를 눌러 역할·출전 상태를 확인하세요.'},
+    {view:'transfers',title:'영입은 관심 등록부터 시작합니다',task:'이적 메뉴를 눌러 후보 한 명을 비교하세요.'},
+    {view:'campus',title:'캠퍼스는 장기 투자입니다',task:'캠퍼스 메뉴를 눌러 운영 건물 하나를 확인하세요.'},
+    {view:'calendar',title:'일정이 모든 결정을 연결합니다',task:'일정 메뉴를 눌러 첫 경기일과 마감을 확인하세요.',mobileTask:'하단 더보기에서 일정 메뉴를 눌러 첫 경기일을 확인하세요.',more:true}
+  ];
+  const ownerArrowStyle=document.createElement('style');
+  ownerArrowStyle.textContent=`.owner-guide{position:fixed;z-index:110;max-width:292px;background:#143b32;color:#f7f4ea;border-top:3px solid #d7b45a;box-shadow:0 12px 30px rgba(0,0,0,.26);padding:13px 14px}.owner-guide .guide-kicker{display:flex;align-items:center;justify-content:space-between;color:#ddc16d;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}.owner-guide .guide-close{border:0;background:transparent;color:#e8ede8;font-size:12px;font-weight:800;padding:2px 0;cursor:pointer}.owner-guide h3{margin:8px 0 3px;font-size:17px;line-height:1.25;color:#fff}.owner-guide p{margin:0;color:#dbe9df;font-size:13px;line-height:1.5}.owner-guide .guide-hint{display:flex;align-items:center;gap:7px;margin-top:10px;color:#f0d680;font-size:12px;font-weight:800}.owner-guide .guide-hint b{font-size:18px;line-height:1}.owner-guide-target{position:relative!important;z-index:109!important;outline:2px solid #d7b45a!important;outline-offset:3px;box-shadow:0 0 0 5px rgba(215,180,90,.22)!important}.owner-guide-target::after{content:'➜';position:absolute;z-index:111;right:-30px;top:50%;transform:translateY(-50%);color:#e4bd51;font-size:30px;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.8)}.owner-guide.left-side .guide-hint{justify-content:flex-end}@media(max-width:720px){.owner-guide{left:10px!important;right:10px!important;top:auto!important;bottom:calc(78px + env(safe-area-inset-bottom));max-width:none;padding:10px 12px;border-top-width:2px}.owner-guide.more-open{top:70px!important;bottom:auto}.owner-guide .guide-kicker{font-size:9px}.owner-guide h3{margin:5px 0 2px;font-size:15px}.owner-guide p{font-size:12px;line-height:1.35}.owner-guide .guide-hint{margin-top:6px;font-size:11px}.owner-guide-target::after{right:50%;top:-29px;transform:translateX(50%) rotate(-90deg);font-size:28px}.mobile-more-panel .owner-guide-target::after{right:-27px;top:50%;transform:translateY(-50%);font-size:27px}}`;
+  document.head.appendChild(ownerArrowStyle);
+  const ownerGuideTarget=step=>{
+    const mobile=matchMedia('(max-width:720px)').matches;
+    if(mobile){
+      const panel=root.querySelector('.mobile-more-panel'),open=panel?.classList.contains('open');
+      if(step.more){
+        if(!open)return root.querySelector('[data-a="mobile-more-toggle"]');
+        return panel?.querySelector(`[data-a="view"][data-v="${step.view}"]`)||null;
+      }
+      if(step.action)return root.querySelector(`.top [data-a="${step.action}"]`)||root.querySelector(`[data-a="${step.action}"]`);
+      return root.querySelector(`.mobile-nav [data-a="view"][data-v="${step.view}"]`)||null;
+    }
+    const selector=step.action?`[data-a="${step.action}"]`:`[data-a="view"][data-v="${step.view}"]`;
+    return [...root.querySelectorAll(selector)].find(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden';})||null;
+  };
+  ownerTutorialOverlay=()=>{
+    const t=ensureOwnerTutorial();if(!S?.stage||S.stage!=='game'||!t.active)return'';
+    const step=ownerArrowGuideSteps[Math.min(t.step,ownerArrowGuideSteps.length-1)],mobile=matchMedia('(max-width:720px)').matches,moreOpen=!!root.querySelector('.mobile-more-panel.open');
+    const task=mobile&&step.mobileTask?step.mobileTask:step.task;
+    return `<aside class="owner-guide ${mobile&&moreOpen?'more-open':''}" aria-live="polite"><div class="guide-kicker"><span>비서 안내 · ${t.step+1}/${ownerArrowGuideSteps.length}</span><button class="guide-close" data-a="tutorial-skip">안내 끄기</button></div><h3>${step.title}</h3><p>${task}</p><div class="guide-hint"><b>➜</b><span>${mobile&&step.more&&!moreOpen?'더보기 버튼을 먼저 누르세요.':'강조된 메뉴를 직접 눌러 다음 단계로 진행합니다.'}</span></div></aside>`;
+  };
+  function positionOwnerGuide(){
+    root.querySelectorAll('.owner-guide-target').forEach(el=>el.classList.remove('owner-guide-target'));
+    const guide=root.querySelector('.owner-guide');if(!guide)return;
+    const t=ensureOwnerTutorial(),step=ownerArrowGuideSteps[Math.min(t.step,ownerArrowGuideSteps.length-1)],target=ownerGuideTarget(step);if(!target)return;
+    target.classList.add('owner-guide-target');
+    if(matchMedia('(max-width:720px)').matches)return;
+    const r=target.getBoundingClientRect(),w=292;
+    let left=r.right+16,side='right';if(left+w>innerWidth-18){left=Math.max(18,r.left-w-16);side='left'}
+    guide.style.left=`${left}px`;guide.style.top=`${Math.max(74,Math.min(innerHeight-150,r.top-12))}px`;guide.classList.toggle('left-side',side==='left');
+  }
   function mountOwnerTutorial(){
-    root.querySelector('.owner-tutorial')?.remove();
+    root.querySelector('.owner-tutorial, .owner-guide')?.remove();
+    root.querySelectorAll('.owner-guide-target').forEach(el=>el.classList.remove('owner-guide-target'));
     const overlay=ownerTutorialOverlay();if(overlay)root.insertAdjacentHTML('beforeend',overlay);
+    requestAnimationFrame(positionOwnerGuide);
     const t=ensureOwnerTutorial(),content=root.querySelector('.content');
     if(S?.stage==='game'&&!t.active&&content&&S.view==='home'&&!content.querySelector('.owner-tutorial-replay'))content.insertAdjacentHTML('afterbegin',`<section class="panel owner-tutorial-replay" style="margin-bottom:14px;border-top:3px solid var(--gold)"><div class="eyebrow">FIRST OWNER / OPTIONAL BRIEF</div><h3>취임식 비서 브리핑 다시 보기</h3><p>새 다이너스티에서는 취임식 직후 자동으로 시작됩니다. 현재 커리어에서는 필요할 때만 이 안내를 다시 열 수 있으며, 취임식 영상도 별도로 재생할 수 있습니다.</p><div class="actions"><button class="btn gold" data-a="tutorial-start">첫 주 운영 안내 다시 보기</button><button class="btn light" data-a="cinema" data-v="acquisition">취임식 영상 다시 보기</button></div></section>`);
   }
@@ -1532,6 +1576,20 @@
     if(b.dataset.a==='tutorial-next'){if(t.step>=OWNER_TUTORIAL_STEPS.length-1){t.active=false;t.completed=true;t.dismissed=false;S.view='home';news('오너 데뷔 튜토리얼 완료','비서 브리핑, 재정, 선수단, 이적, 캠퍼스, 일정의 첫 운영 흐름을 확인했습니다. 이제 원하는 방향으로 구단의 왕조를 운영하세요.','gold');}else{t.step++;S.view=OWNER_TUTORIAL_STEPS[t.step].view;}}
     save();render();
   },true);
+  root.addEventListener('click',e=>{
+    if(S?.stage!=='game')return;
+    const t=ensureOwnerTutorial();if(!t.active)return;
+    const step=ownerArrowGuideSteps[Math.min(t.step,ownerArrowGuideSteps.length-1)],b=e.target.closest('[data-a]');if(!b)return;
+    const mobile=matchMedia('(max-width:720px)').matches;
+    if(mobile&&step.more&&b.dataset.a==='mobile-more-toggle'){setTimeout(()=>mountOwnerTutorial(),0);return;}
+    const matched=step.action?b.dataset.a===step.action:(b.dataset.a==='view'&&b.dataset.v===step.view);
+    if(!matched)return;
+    if(t.step>=ownerArrowGuideSteps.length-1){
+      t.active=false;t.completed=true;t.dismissed=false;
+      news('오너 데뷔 튜토리얼 완료','비서 안내를 따라 재정·선수단·이적·캠퍼스·일정과 첫 주 운영을 직접 확인했습니다. 이제 원하는 방식으로 구단을 운영하세요.','gold');
+    }else t.step++;
+    save();render();
+  });
   const startCareerBeforeCeremonyTutorial=startCareer;
   startCareer=()=>{
     startCareerBeforeCeremonyTutorial();
@@ -1545,6 +1603,22 @@
       save();render();
     }
   };
+  const nextWeekBeforeArrowTutorialCompletion=nextWeek;
+  nextWeek=()=>{
+    const t=S?.ownerTutorial;
+    if(t?.active&&Number(t.step)===ownerArrowGuideSteps.length-1){
+      t.active=false;t.completed=true;t.dismissed=false;
+      news('오너 데뷔 튜토리얼 완료','비서 안내를 따라 재정·선수단·이적·캠퍼스·일정과 첫 주 운영을 직접 확인했습니다. 이제 원하는 방식으로 구단을 운영하세요.','gold');
+    }
+    return nextWeekBeforeArrowTutorialCompletion();
+  };
+  document.addEventListener('click',e=>{
+    const b=e.target.closest?.('[data-a="next"]'),t=S?.ownerTutorial;
+    if(!b||S?.stage!=='game'||!t?.active||Number(t.step)!==ownerArrowGuideSteps.length-1)return;
+    t.active=false;t.completed=true;t.dismissed=false;
+    news('오너 데뷔 튜토리얼 완료','비서 안내를 따라 재정·선수단·이적·캠퍼스·일정과 첫 주 운영을 직접 확인했습니다. 이제 원하는 방식으로 구단을 운영하세요.','gold');
+    save();
+  },true);
   render();
 })();
 </script></body></html>
