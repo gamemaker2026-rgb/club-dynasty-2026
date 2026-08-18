@@ -29,29 +29,34 @@
   </style>
   <style>
     /* Mobile usability pass: keep the decision screen readable above persistent controls. */
+    .mobile-more-panel{display:none}.update-notice{position:fixed;z-index:120;inset:0;display:grid;place-items:center;padding:18px;background:rgba(3,15,11,.72);backdrop-filter:blur(8px)}.update-notice-card{width:min(520px,100%);border-top:4px solid var(--gold);padding:24px;background:#fbfaf6;color:var(--ink);box-shadow:0 28px 70px rgba(0,0,0,.35)}.update-notice-card h2{margin:6px 0 9px;font-size:clamp(27px,5vw,40px);line-height:1.02}.update-notice-card p{margin:0;color:#53645d;font-size:12px;line-height:1.7}.update-notice-list{display:grid;gap:1px;margin:17px 0;background:var(--line)}.update-notice-list div{padding:10px 11px;background:#f4f3ed;color:#344a42;font-size:11px;line-height:1.5}.update-notice-list b{color:#0d3b30}.update-notice-card .btn{width:100%;margin-top:2px}
     @media(max-width:720px){
-      .top{align-items:flex-start;overflow:hidden}
-      .top-title{min-width:0;max-width:calc(100vw - 238px);overflow:hidden;text-overflow:ellipsis}
+      .top{align-items:center;min-height:82px;padding:7px 11px;overflow:visible}
+      .top-title{min-width:0;max-width:calc(100vw - 230px);overflow:hidden;text-overflow:ellipsis}
       .top-title b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-      .top-actions{flex:0 0 auto;max-width:222px;flex-wrap:wrap;justify-content:flex-end}
-      .quick-save-actions{max-width:156px!important;gap:3px!important}
-      .quick-save-actions .btn{min-width:46px;padding:7px 6px!important;font-size:9px!important}
-      .quick-save-actions small{font-size:8px!important;white-space:nowrap}
-      .advance{min-width:56px;padding:8px 7px;font-size:9px}
-      .mobile-nav{max-height:106px;overflow-y:auto;scrollbar-width:none}
-      .content{padding-bottom:146px}
+      .top-actions{display:grid;grid-template-columns:repeat(4,1fr);width:218px;max-width:218px;gap:4px;align-items:stretch}
+      .quick-save-actions{display:contents!important}
+      .quick-save-actions .btn,.top-actions>.btn,.advance{min-width:0!important;min-height:32px!important;margin:0!important;padding:5px 3px!important;font-size:8px!important}
+      .quick-save-actions small,.top-actions .date{display:none!important}
+      .assistant-mobile-top-toggle{min-width:0!important;min-height:32px!important;padding:5px 3px!important;font-size:8px!important}
+      .mobile-nav{grid-template-columns:repeat(5,1fr)!important;width:calc(100% - 12px);min-height:62px;max-height:none;overflow:visible;padding:3px;bottom:max(6px,env(safe-area-inset-bottom))}
+      .mobile-nav button{min-height:54px!important;font-size:8px!important}.mobile-nav button b{font-size:15px!important}
+      .mobile-more-panel{position:fixed;z-index:55;right:8px;bottom:74px;left:8px;display:none;grid-template-columns:repeat(3,1fr);gap:5px;max-height:calc(100dvh - 166px);overflow:auto;padding:9px;border:1px solid rgba(214,173,85,.7);background:#09251e;box-shadow:0 16px 40px rgba(0,0,0,.32)}
+      .mobile-more-panel.open{display:grid}.mobile-more-panel button{min-height:48px;border:0;background:#123c31;color:#e9f0ec;font-size:9px;font-weight:900}.mobile-more-panel button.active{background:var(--forest);outline:1px solid var(--gold)}.mobile-more-panel .mobile-more-close{grid-column:span 3;min-height:34px;background:#d6ad55;color:#14251f}
+      .content{padding-bottom:82px}
       .dashboard,.split{grid-template-columns:minmax(0,1fr)!important;min-width:0;max-width:100%}
       .dashboard>*,.split>*,.panel,.detail{min-width:0;max-width:100%}
       .table-wrap{width:100%;max-width:100%;min-width:0;overflow-x:clip}
       .table-wrap table{width:100%!important;min-width:0!important;table-layout:fixed}
       .table-wrap th,.table-wrap td{padding:8px 4px;font-size:9px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
       .table-wrap th:nth-child(n+6),.table-wrap td:nth-child(n+6){display:none}
-      .assistant-dock{right:10px;top:108px;bottom:auto;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 224px);overflow:auto}
+      .assistant-dock{right:10px;top:92px;bottom:auto;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 174px);overflow:auto}
       .assistant-dock.mobile-collapsed{display:none}
       .assistant-mobile-top-toggle{display:grid!important;place-items:center;min-width:46px!important;min-height:34px!important;padding:6px 7px!important;background:#d6ad55!important;color:#14251f!important;font-size:9px!important;font-weight:950!important}
       .assistant-dock-head{grid-template-columns:44px minmax(0,1fr) auto}
       .assistant-dock-head img,.assistant-dock-head .assistant-fallback{width:44px;height:44px}
       .assistant-dock-head b{font-size:11px}.assistant-dock-head span{font-size:8px;line-height:1.35}
+      .update-notice{padding:14px}.update-notice-card{padding:20px}.update-notice-list div{font-size:10px}
     }
   </style>
 </head>
@@ -134,7 +139,7 @@ function ensureCore(){if(!S)return;S.squad=Array.isArray(S.squad)&&S.squad.lengt
   function mountCoreOperations(){ensureCore();mountAssistantBrief();mountWarRoom();mountCaptainDesk()}
   const executiveCandidate=()=>S.assistants?.find(x=>x.id===S.executive?.hiredId)||null;
   const assistantPortrait=c=>`<img src="${c.photo}" alt="${esc(c.name)} 비서 얼굴 이미지" onerror="this.onerror=null;this.src='assets/assistant_portrait_style_reference.jpg'">`;
-  function executiveOffice(){ensureCore();const e=S.executive,filter=e.filter||'ALL',list=S.assistants.filter(c=>filter==='ALL'||c.gender===filter).sort((a,b)=>b.rating-a.rating),hired=executiveCandidate();return`<section class="executive-office"><div class="head" style="margin-top:0"><div><div class="eyebrow">EXECUTIVE ASSISTANT RECRUITMENT</div><h3>전속 비서 채용실 · 성인 가상 후보 30명</h3></div><small>${hired?`${hired.name} 비서 재직 중 · 연 ${hired.annualSalary||hired.salary}억`:'아직 전속 비서가 없습니다'}</small></div><p>남성 15명·여성 15명 후보를 종합 능력치 순으로 비교합니다. 연봉은 매달 12분의 1씩 분할 지급됩니다. 능력치 100의 만능 비서는 모든 호출 업무를 최고 효율로 지원합니다.</p><div class="tabs" style="margin-top:12px"><button class="${filter==='ALL'?'active':''}" data-a="assistant-filter" data-v="ALL">전체 30명</button><button class="${filter==='남성'?'active':''}" data-a="assistant-filter" data-v="남성">남성 15명</button><button class="${filter==='여성'?'active':''}" data-a="assistant-filter" data-v="여성">여성 15명</button></div><div class="assistant-market">${list.map(c=>`<button class="assistant-card ${e.selectedId===c.id?'selected':''}" data-a="assistant-select" data-v="${c.id}">${assistantPortrait(c)}<span><b>${c.name} · ${c.gender}</b><span>${c.age}세 · ${c.primary}</span><em>종합 ${c.rating} · 연 ${c.annualSalary||c.salary}억</em><small>${c.rating===100?'만능 비서 · 모든 업무 100':'관계 '+c.skills.relation+' / 협상 '+c.skills.negotiation+' / 미디어 '+c.skills.media}</small></span></button>`).join('')}</div></section>`}
+  function executiveOffice(){ensureCore();const e=S.executive,filter=e.filter||'ALL',hired=executiveCandidate(),list=S.assistants.filter(c=>c.id!==hired?.id&&(filter==='ALL'||c.gender===filter)).sort((a,b)=>b.rating-a.rating);return`<section class="executive-office"><div class="head" style="margin-top:0"><div><div class="eyebrow">EXECUTIVE ASSISTANT RECRUITMENT</div><h3>전속 비서 채용실 · 성인 가상 후보 30명</h3></div><small>${hired?`${hired.name} 비서 재직 중 · 연 ${hired.annualSalary||hired.salary}억`:'아직 전속 비서가 없습니다'}</small></div><p>남성 15명·여성 15명 후보를 종합 능력치 순으로 비교합니다. 연봉은 매달 12분의 1씩 분할 지급됩니다. 능력치 100의 만능 비서는 모든 호출 업무를 최고 효율로 지원합니다.</p><div class="tabs" style="margin-top:12px"><button class="${filter==='ALL'?'active':''}" data-a="assistant-filter" data-v="ALL">${hired?'교체 후보 29명':'전체 30명'}</button><button class="${filter==='남성'?'active':''}" data-a="assistant-filter" data-v="남성">남성 후보</button><button class="${filter==='여성'?'active':''}" data-a="assistant-filter" data-v="여성">여성 후보</button></div><div class="assistant-market">${list.map(c=>`<button class="assistant-card ${e.selectedId===c.id?'selected':''}" data-a="assistant-select" data-v="${c.id}">${assistantPortrait(c)}<span><b>${c.name} · ${c.gender}</b><span>${c.age}세 · ${c.primary}</span><em>종합 ${c.rating} · 연 ${c.annualSalary||c.salary}억</em><small>${c.rating===100?'만능 비서 · 모든 업무 100':'관계 '+c.skills.relation+' / 협상 '+c.skills.negotiation+' / 미디어 '+c.skills.media}</small></span></button>`).join('')}</div></section>`}
   function mountExecutiveOffice(){if(S.view!=='staff'||document.querySelector('.executive-office'))return;const anchor=document.querySelector('.page-title');if(anchor)anchor.after(Object.assign(document.createElement('div'),{innerHTML:executiveOffice()}).firstChild)}
   function mountExecutiveHire(){if(S.view!=='staff'||document.querySelector('.assistant-hire-panel'))return;const office=document.querySelector('.executive-office'),c=S.assistants.find(x=>x.id===S.executive.selectedId);if(!office||!c)return;const old=executiveCandidate(),wrap=document.createElement('div');wrap.className='assistant-hire-panel';wrap.style.cssText='margin-top:12px;padding:12px;background:rgba(0,0,0,.17);border-top:1px solid rgba(255,255,255,.18)';wrap.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><b>${c.name} · 종합 ${c.rating} · ${c.primary}</b><small style="display:block;color:#c8dad2;margin-top:3px">첫 달 급여 ${c.salary}억${old&&old.id!==c.id?` + 기존 비서 정산 ${old.salary}억`:''} · ${c.rating===100?'만능 비서: 모든 업무 능력치 100':'전문 능력으로 호출 결과를 보정'}</small></div><button class="btn gold" data-a="assistant-hire">${old?.id===c.id?'현재 전속 비서':'전속 비서 채용'}</button></div>`;office.append(wrap)}
   function assistantDock(){const c=executiveCandidate();if(!c)return`<section class="assistant-dock"><div class="assistant-dock-head"><div class="assistant-fallback">비</div><div><b>전속 비서 공석</b><span>채용실에서 30명 후보를 비교하세요.</span></div><button class="btn gold" data-a="assistant-open">채용실</button></div><div class="assistant-dock-note">캠퍼스 오른쪽 하단의 전속 비서는 선수·감독·인터뷰·협상·일정 호출을 지원합니다.</div></section>`;const open=S.executive.open,annual=c.annualSalary||c.salary;return`<section class="assistant-dock"><div class="assistant-dock-head">${assistantPortrait(c)}<div><b>${c.name} 비서 · 종합 ${c.rating}</b><span>${c.primary} · 연 ${annual}억 · 월 ${Number((annual/12).toFixed(1))}억 · ${S.executive.lastAction}</span></div><button class="btn gold" data-a="assistant-toggle">${open?'닫기':'호출'}</button></div>${open?`<div class="assistant-call-grid"><button data-a="assistant-call" data-v="player">선수 대화</button><button data-a="assistant-call" data-v="manager">감독 대화</button><button data-a="assistant-call" data-v="media">인터뷰 요청</button><button data-a="assistant-call" data-v="transfer">이적·계약 메모</button><button data-a="assistant-call" data-v="calendar">일정·마감 정리</button><button data-a="assistant-call" data-v="report">선수단 리포트</button></div><div class="assistant-dock-note">관계 ${c.skills.relation} · 협상 ${c.skills.negotiation} · 미디어 ${c.skills.media} · 운영 ${c.skills.operations} · 분석 ${c.skills.analysis}</div>`:''}</section>`}
@@ -1329,6 +1334,36 @@ function ensureCore(){if(!S)return;S.squad=Array.isArray(S.squad)&&S.squad.lengt
   },true);
   const startCareerBeforeEntryGate=startCareer;
   startCareer=()=>{startCareerBeforeEntryGate();if(S?.stage==='game'){sessionStorage.setItem(ENTRY_GATE_KEY,'open');render();}};
+  const UPDATE_NOTICE_VERSION='2026.08.18-mobile-navigation',UPDATE_NOTICE_KEY='club_dynasty_2026_seen_update_notice';
+  function updateNotice(){
+    if(localStorage.getItem(UPDATE_NOTICE_KEY)===UPDATE_NOTICE_VERSION)return '';
+    return `<section class="update-notice" role="dialog" aria-modal="true" aria-labelledby="updateNoticeTitle"><article class="update-notice-card"><div class="eyebrow">CLUB DYNASTY 2026 / UPDATE NOTICE</div><h2 id="updateNoticeTitle">모바일 운영 화면을<br>정리했습니다.</h2><p>이번 업데이트는 휴대폰에서 본문이 가려지지 않도록 메뉴와 비서 호출 위치를 다시 구성한 버전입니다.</p><div class="update-notice-list"><div><b>한 줄 핵심 메뉴</b><br>홈·캠퍼스·선수단·이적·더보기로 하단 메뉴를 축소했습니다.</div><div><b>더보기와 상단 비서</b><br>확장 기능은 더보기에서 열고, 비서는 오른쪽 상단에서 필요할 때만 호출합니다.</div><div><b>전속 비서 후보 정리</b><br>현재 재직 중인 전속 비서는 교체 후보 목록에서 제외됩니다.</div></div><button class="btn gold" data-a="update-notice-close">업데이트 확인 · 게임 시작</button></article></section>`;
+  }
+  const renderBeforeUpdateNotice=render;
+  render=()=>{renderBeforeUpdateNotice();if(S?.stage!=='landing'&&!root.querySelector('.update-notice'))root.insertAdjacentHTML('beforeend',updateNotice());};
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-a="update-notice-close"]');if(!b)return;
+    e.preventDefault();e.stopImmediatePropagation();localStorage.setItem(UPDATE_NOTICE_KEY,UPDATE_NOTICE_VERSION);root.querySelector('.update-notice')?.remove();
+  },true);
+  const shellBeforeMobileMenu=shell;
+  shell=content=>{
+    let html=shellBeforeMobileMenu(content);
+    if(S?.stage!=='game')return html;
+    const primary=[['home','⌂','홈'],['campus','▣','캠퍼스'],['squad','◎','선수단'],['transfers','⇄','이적']];
+    const more=[['profile','◉','프로필'],['life','✦','라이프'],['people','♥','인물'],['staff','♙','스태프'],['finance','₩','재정'],['facilities','⌘','시설'],['calendar','▦','일정'],['station','◈','방송국'],['newlywed','⌂','신혼집'],['dynasty','✥','다이너스티'],['world','◫','세계관']];
+    const primaryIds=primary.map(x=>x[0]),moreOpen=!primaryIds.includes(S.view);
+    const btn=(x,extra='')=>`<button class="${S.view===x[0]?'active':''} ${extra}" data-a="view" data-v="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`;
+    const mobile=`<nav class="mobile-nav">${primary.map(x=>btn(x)).join('')}<button class="${moreOpen?'active':''}" data-a="mobile-more-toggle"><b>⋯</b>더보기</button></nav><section class="mobile-more-panel"><button class="mobile-more-close" data-a="mobile-more-close">메뉴 닫기</button>${more.map(x=>btn(x)).join('')}</section>`;
+    return html.replace(/<nav class="mobile-nav">[\s\S]*?<\/nav>/,mobile);
+  };
+  root.addEventListener('click',e=>{
+    const b=e.target.closest('[data-a]');if(!b)return;
+    if(b.dataset.a==='mobile-more-toggle'){
+      e.preventDefault();e.stopImmediatePropagation();root.querySelector('.mobile-more-panel')?.classList.toggle('open');
+    }else if(b.dataset.a==='mobile-more-close'){
+      e.preventDefault();e.stopImmediatePropagation();root.querySelector('.mobile-more-panel')?.classList.remove('open');
+    }
+  },true);
   S=sessionStorage.getItem(ENTRY_GATE_KEY)==='setup'?(loadDraft()||load()||base()):(load()||base());ensureWorldState();ensureFederationState();render();
 })();
 </script></body></html>
