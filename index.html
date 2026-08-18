@@ -1517,7 +1517,7 @@
     root.querySelector('.owner-tutorial')?.remove();
     const overlay=ownerTutorialOverlay();if(overlay)root.insertAdjacentHTML('beforeend',overlay);
     const t=ensureOwnerTutorial(),content=root.querySelector('.content');
-    if(S?.stage==='game'&&!t.active&&content&&S.view==='home'&&!content.querySelector('.owner-tutorial-replay'))content.insertAdjacentHTML('afterbegin',`<section class="panel owner-tutorial-replay" style="margin-bottom:14px;border-top:3px solid var(--gold)"><div class="eyebrow">FIRST OWNER / OPTIONAL BRIEF</div><h3>취임식 비서 브리핑 다시 보기</h3><p>새 다이너스티에서는 취임식 직후 자동으로 시작됩니다. 현재 커리어에서는 필요할 때만 이 안내를 다시 열 수 있습니다.</p><button class="btn gold" data-a="tutorial-start">첫 주 운영 안내 다시 보기</button></section>`);
+    if(S?.stage==='game'&&!t.active&&content&&S.view==='home'&&!content.querySelector('.owner-tutorial-replay'))content.insertAdjacentHTML('afterbegin',`<section class="panel owner-tutorial-replay" style="margin-bottom:14px;border-top:3px solid var(--gold)"><div class="eyebrow">FIRST OWNER / OPTIONAL BRIEF</div><h3>취임식 비서 브리핑 다시 보기</h3><p>새 다이너스티에서는 취임식 직후 자동으로 시작됩니다. 현재 커리어에서는 필요할 때만 이 안내를 다시 열 수 있으며, 취임식 영상도 별도로 재생할 수 있습니다.</p><div class="actions"><button class="btn gold" data-a="tutorial-start">첫 주 운영 안내 다시 보기</button><button class="btn light" data-a="cinema" data-v="acquisition">취임식 영상 다시 보기</button></div></section>`);
   }
   const renderBeforeOwnerTutorial=render;
   render=()=>{renderBeforeOwnerTutorial();if(S?.stage==='game'){ensureOwnerTutorial();mountOwnerTutorial();}};
@@ -1536,8 +1536,9 @@
       const t=ensureOwnerTutorial();
       t.active=true;t.step=0;t.completed=false;t.dismissed=false;
       S.view='home';
+      S.cinematic=null;
       root.querySelector('.update-notice')?.remove();
-      news('취임식 비서 브리핑 시작','새 다이너스티의 첫 주 운영을 비서와 함께 시작합니다. 안내를 따라 예산·선수단·이적·캠퍼스·일정을 확인하세요.','gold');
+      news('취임식 비서 브리핑 시작','취임식 영상은 자동으로 열지 않고 보관했습니다. 먼저 비서 안내를 따라 예산·선수단·이적·캠퍼스·일정을 확인하세요. 영상은 홈 화면에서 언제든 다시 볼 수 있습니다.','gold');
       save();render();
     }
   };
