@@ -1349,13 +1349,13 @@
   },true);
   const startCareerBeforeEntryGate=startCareer;
   startCareer=()=>{startCareerBeforeEntryGate();if(S?.stage==='game'){sessionStorage.setItem(ENTRY_GATE_KEY,'open');render();}};
-  const UPDATE_NOTICE_VERSION='2026.08.19-ceremony-onboarding',UPDATE_NOTICE_KEY='club_dynasty_2026_seen_update_notice';
+  const UPDATE_NOTICE_VERSION='2026.08.19-start-gated-guide',UPDATE_NOTICE_KEY='club_dynasty_2026_seen_update_notice';
   function updateNotice(){
     if(localStorage.getItem(UPDATE_NOTICE_KEY)===UPDATE_NOTICE_VERSION)return '';
-    return `<section class="update-notice" role="dialog" aria-modal="true" aria-labelledby="updateNoticeTitle"><article class="update-notice-card"><div class="eyebrow">CLUB DYNASTY 2026 / UPDATE NOTICE</div><h2 id="updateNoticeTitle">새 다이너스티를 시작하면<br>취임식부터 비서가 안내합니다.</h2><p>처음 하는 구단주는 구단 인수와 취임식이 끝난 직후, 전속 비서의 첫 브리핑을 받으며 실제 운영 화면을 따라가게 됩니다. 별도의 긴 설명을 먼저 읽지 않아도 첫 주에 필요한 결정부터 자연스럽게 익힐 수 있습니다.</p><div class="update-notice-list"><div><b>취임식 직후 첫 브리핑</b><br>비서가 예산, 선수단, 이적, 캠퍼스, 일정의 첫 우선순위를 실제 화면에서 안내합니다.</div><div><b>첫 주 운영 미션</b><br>단계를 넘길 때마다 해당 운영 화면으로 이동하며, 직접 확인한 뒤 다음 안내를 진행합니다.</div><div><b>기존 이용자 보호</b><br>현재 진행 중인 다이너스티에는 강제 튜토리얼이 시작되지 않으며, 홈 화면에서 필요할 때만 다시 볼 수 있습니다.</div></div><button class="btn gold" data-a="update-notice-close">업데이트 확인 · 게임 시작</button></article></section>`;
+    return `<section class="update-notice" role="dialog" aria-modal="true" aria-labelledby="updateNoticeTitle"><article class="update-notice-card"><div class="eyebrow">CLUB DYNASTY 2026 / UPDATE NOTICE</div><h2 id="updateNoticeTitle">튜토리얼 시작 조건을<br>새 다이너스티로 분리했습니다.</h2><p>화살표 안내는 저장된 다이너스티를 이어 하거나 시작 화면을 열었을 때 자동으로 실행되지 않습니다. 새 구단주 다이너스티의 인수를 끝낸 경우에만 비서가 실제 메뉴를 가리키며 안내합니다.</p><div class="update-notice-list"><div><b>시작 화면·이어하기 보호</b><br>PC와 모바일의 시작 선택 화면, 저장된 다이너스티 이어하기에서는 튜토리얼이 자동으로 표시되지 않습니다.</div><div><b>비차단형 메뉴 안내</b><br>새 다이너스티 취임 뒤에만 재정, 선수단, 이적, 캠퍼스, 일정 메뉴를 화살표로 안내합니다.</div><div><b>취임식 영상 선택 재생</b><br>영상은 튜토리얼을 가리지 않으며, 필요할 때만 홈 화면에서 다시 볼 수 있습니다.</div></div><button class="btn gold" data-a="update-notice-close">업데이트 확인</button></article></section>`;
   }
   const renderBeforeUpdateNotice=render;
-  render=()=>{renderBeforeUpdateNotice();if(S?.stage!=='landing'&&!S?.ownerTutorial?.active&&!root.querySelector('.update-notice'))root.insertAdjacentHTML('beforeend',updateNotice());};
+  render=()=>{renderBeforeUpdateNotice();if((S?.stage==='landing'||!S?.ownerTutorial?.active)&&!root.querySelector('.update-notice'))root.insertAdjacentHTML('beforeend',updateNotice());};
   root.addEventListener('click',e=>{
     const b=e.target.closest('[data-a="update-notice-close"]');if(!b)return;
     e.preventDefault();e.stopImmediatePropagation();localStorage.setItem(UPDATE_NOTICE_KEY,UPDATE_NOTICE_VERSION);root.querySelector('.update-notice')?.remove();
@@ -1500,18 +1500,13 @@
   ];
   function ensureOwnerTutorial(){
     if(!S)return null;
-    S.ownerTutorial={version:OWNER_TUTORIAL_VERSION,active:false,step:0,completed:false,dismissed:false,...(S.ownerTutorial||{})};
-    if(S.ownerTutorial.version!==OWNER_TUTORIAL_VERSION){S.ownerTutorial={version:OWNER_TUTORIAL_VERSION,active:false,step:0,completed:false,dismissed:false};}
+    S.ownerTutorial={version:OWNER_TUTORIAL_VERSION,eligible:false,active:false,step:0,completed:false,dismissed:false,...(S.ownerTutorial||{})};
+    if(S.ownerTutorial.version!==OWNER_TUTORIAL_VERSION){S.ownerTutorial={version:OWNER_TUTORIAL_VERSION,eligible:false,active:false,step:0,completed:false,dismissed:false};}
+    if(!S.ownerTutorial.eligible||sessionStorage.getItem(ENTRY_GATE_KEY)!=='open'){S.ownerTutorial.active=false;}
     S.ownerTutorial.step=Math.max(0,Math.min(OWNER_TUTORIAL_STEPS.length-1,Number(S.ownerTutorial.step)||0));
     return S.ownerTutorial;
   }
-  function ownerTutorialOverlay(){
-    const t=ensureOwnerTutorial();if(!t?.active||S?.stage!=='game')return '';
-    const step=OWNER_TUTORIAL_STEPS[t.step],last=t.step===OWNER_TUTORIAL_STEPS.length-1;
-    const checklist=OWNER_TUTORIAL_STEPS.map((x,i)=>`<li class="${i<t.step?'done':i===t.step?'now':''}"><span>${i<t.step?'✓':String(i+1).padStart(2,'0')}</span><b>${x.task}</b></li>`).join('');
-    const assistantName=S.executive?.hiredId?S.assistants?.find(x=>x.id===S.executive.hiredId)?.name:'전속 비서';
-    return `<section class="owner-tutorial" role="dialog" aria-modal="true" aria-labelledby="ownerTutorialTitle"><article class="owner-tutorial-card"><div class="eyebrow">INAUGURATION BRIEF / ${t.step+1} OF ${OWNER_TUTORIAL_STEPS.length}</div><div class="owner-tutorial-progress"><span style="width:${Math.round((t.step+1)/OWNER_TUTORIAL_STEPS.length*100)}%"></span></div><div class="owner-tutorial-assistant"><span>비서 브리핑</span><b>${assistantName||'전속 비서'}</b><em>“${t.step===0?'취임을 축하드립니다. 첫 주 운영부터 함께 정리하겠습니다.':'다음 운영 판단으로 이동하겠습니다.'}”</em></div><h2 id="ownerTutorialTitle">${step.title}</h2><p>${step.copy}</p><div class="owner-tutorial-task"><b>이번 단계 미션</b><span>${step.task}</span></div><ol>${checklist}</ol><div class="actions"><button class="btn gold" data-a="tutorial-next">${last?'첫 주 운영 시작':'비서 안내 계속 · '+(t.step+2)+'단계'}</button><button class="btn light" data-a="tutorial-skip">안내 건너뛰기</button></div></article></section>`;
-  }
+  function ownerTutorialOverlay(){return '';}
   const ownerTutorialStyle=document.createElement('style');
   ownerTutorialStyle.textContent=`.owner-tutorial{position:fixed;inset:0;z-index:95;background:rgba(8,24,20,.76);display:flex;align-items:center;justify-content:center;padding:20px}.owner-tutorial-card{width:min(620px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#f7f4ea;color:#17372f;border-top:4px solid #d7b45a;padding:26px;box-shadow:0 20px 65px rgba(0,0,0,.35)}.owner-tutorial-card h2{margin:10px 0 9px;font-size:27px;color:#13352c}.owner-tutorial-card p{margin:0;color:#51665d;line-height:1.7}.owner-tutorial-progress{height:7px;background:#dfe4dd;margin:14px 0 16px}.owner-tutorial-progress span{display:block;height:100%;background:#c79838}.owner-tutorial-assistant{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;padding:11px 13px;background:#143b32;color:#eff6ef;border-left:3px solid #c79838}.owner-tutorial-assistant span{font-size:10px;color:#d9bc6d;text-transform:uppercase;letter-spacing:.08em}.owner-tutorial-assistant b{font-size:14px}.owner-tutorial-assistant em{grid-column:1/-1;font-size:12px;line-height:1.5;color:#dbe9df;font-style:normal}.owner-tutorial-task{margin:16px 0 11px;padding:12px 13px;background:#e5eee8;border-left:3px solid #c79838}.owner-tutorial-task b,.owner-tutorial-task span{display:block}.owner-tutorial-task b{font-size:11px;color:#687b72;text-transform:uppercase;letter-spacing:.08em}.owner-tutorial-task span{font-size:15px;font-weight:800;margin-top:4px}.owner-tutorial-card ol{list-style:none;margin:0;padding:0;border-top:1px solid #d8ddd6}.owner-tutorial-card li{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid #d8ddd6;color:#87948d;font-size:12px}.owner-tutorial-card li span{width:23px;height:23px;display:grid;place-items:center;border:1px solid #bac8bf;color:#6e8076;font-weight:800}.owner-tutorial-card li.now{color:#17372f}.owner-tutorial-card li.now span{border-color:#c79838;background:#c79838;color:#fff}.owner-tutorial-card li.done{color:#2f6a50}.owner-tutorial-card li.done span{border-color:#2f6a50;background:#2f6a50;color:#fff}@media(max-width:720px){.owner-tutorial{align-items:flex-end;padding:10px}.owner-tutorial-card{max-height:calc(100vh - 20px);padding:19px}.owner-tutorial-card h2{font-size:22px}.owner-tutorial-card .actions{display:grid;grid-template-columns:1fr 1fr}.owner-tutorial-card .actions .btn{width:100%;padding:11px 8px;font-size:12px}}`;
   document.head.appendChild(ownerTutorialStyle);
@@ -1543,7 +1538,7 @@
     return [...root.querySelectorAll(selector)].find(el=>{const r=el.getBoundingClientRect(),s=getComputedStyle(el);return r.width>0&&r.height>0&&s.display!=='none'&&s.visibility!=='hidden';})||null;
   };
   ownerTutorialOverlay=()=>{
-    const t=ensureOwnerTutorial();if(!S?.stage||S.stage!=='game'||!t.active)return'';
+    const t=ensureOwnerTutorial();if(!S?.stage||S.stage!=='game'||!t.eligible||sessionStorage.getItem(ENTRY_GATE_KEY)!=='open'||!t.active)return'';
     const step=ownerArrowGuideSteps[Math.min(t.step,ownerArrowGuideSteps.length-1)],mobile=matchMedia('(max-width:720px)').matches,moreOpen=!!root.querySelector('.mobile-more-panel.open');
     const task=mobile&&step.mobileTask?step.mobileTask:step.task;
     return `<aside class="owner-guide ${mobile&&moreOpen?'more-open':''}" aria-live="polite"><div class="guide-kicker"><span>비서 안내 · ${t.step+1}/${ownerArrowGuideSteps.length}</span><button class="guide-close" data-a="tutorial-skip">안내 끄기</button></div><h3>${step.title}</h3><p>${task}</p><div class="guide-hint"><b>➜</b><span>${mobile&&step.more&&!moreOpen?'더보기 버튼을 먼저 누르세요.':'강조된 메뉴를 직접 눌러 다음 단계로 진행합니다.'}</span></div></aside>`;
@@ -1564,14 +1559,14 @@
     const overlay=ownerTutorialOverlay();if(overlay)root.insertAdjacentHTML('beforeend',overlay);
     requestAnimationFrame(positionOwnerGuide);
     const t=ensureOwnerTutorial(),content=root.querySelector('.content');
-    if(S?.stage==='game'&&!t.active&&content&&S.view==='home'&&!content.querySelector('.owner-tutorial-replay'))content.insertAdjacentHTML('afterbegin',`<section class="panel owner-tutorial-replay" style="margin-bottom:14px;border-top:3px solid var(--gold)"><div class="eyebrow">FIRST OWNER / OPTIONAL BRIEF</div><h3>취임식 비서 브리핑 다시 보기</h3><p>새 다이너스티에서는 취임식 직후 자동으로 시작됩니다. 현재 커리어에서는 필요할 때만 이 안내를 다시 열 수 있으며, 취임식 영상도 별도로 재생할 수 있습니다.</p><div class="actions"><button class="btn gold" data-a="tutorial-start">첫 주 운영 안내 다시 보기</button><button class="btn light" data-a="cinema" data-v="acquisition">취임식 영상 다시 보기</button></div></section>`);
+    if(S?.stage==='game'&&t.eligible&&t.completed&&!t.active&&content&&S.view==='home'&&!content.querySelector('.owner-tutorial-replay'))content.insertAdjacentHTML('afterbegin',`<section class="panel owner-tutorial-replay" style="margin-bottom:14px;border-top:3px solid var(--gold)"><div class="eyebrow">FIRST OWNER / OPTIONAL BRIEF</div><h3>취임식 비서 브리핑 다시 보기</h3><p>새 다이너스티 취임 당시 완료한 안내를 다시 볼 수 있습니다. 취임식 영상은 별도로 선택해 재생할 수 있습니다.</p><div class="actions"><button class="btn gold" data-a="tutorial-start">첫 주 운영 안내 다시 보기</button><button class="btn light" data-a="cinema" data-v="acquisition">취임식 영상 다시 보기</button></div></section>`);
   }
   const renderBeforeOwnerTutorial=render;
   render=()=>{renderBeforeOwnerTutorial();if(S?.stage==='game'){const t=ensureOwnerTutorial();if(t.active){S.cinematic=null;root.querySelector('.cinema-modal')?.remove();}mountOwnerTutorial();}};
   root.addEventListener('click',e=>{
     const b=e.target.closest('[data-a="tutorial-start"],[data-a="tutorial-next"],[data-a="tutorial-skip"]');if(!b||S?.stage!=='game')return;
     e.preventDefault();e.stopImmediatePropagation();const t=ensureOwnerTutorial();
-    if(b.dataset.a==='tutorial-start'){t.active=true;t.step=0;t.dismissed=false;localStorage.setItem(UPDATE_NOTICE_KEY,UPDATE_NOTICE_VERSION);root.querySelector('.update-notice')?.remove();}
+    if(b.dataset.a==='tutorial-start'&&t.eligible){t.active=true;t.step=0;t.dismissed=false;localStorage.setItem(UPDATE_NOTICE_KEY,UPDATE_NOTICE_VERSION);root.querySelector('.update-notice')?.remove();}
     if(b.dataset.a==='tutorial-skip'){t.active=false;t.dismissed=true;}
     if(b.dataset.a==='tutorial-next'){if(t.step>=OWNER_TUTORIAL_STEPS.length-1){t.active=false;t.completed=true;t.dismissed=false;S.view='home';news('오너 데뷔 튜토리얼 완료','비서 브리핑, 재정, 선수단, 이적, 캠퍼스, 일정의 첫 운영 흐름을 확인했습니다. 이제 원하는 방향으로 구단의 왕조를 운영하세요.','gold');}else{t.step++;S.view=OWNER_TUTORIAL_STEPS[t.step].view;}}
     save();render();
@@ -1595,7 +1590,7 @@
     startCareerBeforeCeremonyTutorial();
     if(S?.stage==='game'){
       const t=ensureOwnerTutorial();
-      t.active=true;t.step=0;t.completed=false;t.dismissed=false;
+      t.eligible=true;t.active=true;t.step=0;t.completed=false;t.dismissed=false;
       S.view='home';
       S.cinematic=null;
       root.querySelector('.update-notice')?.remove();
