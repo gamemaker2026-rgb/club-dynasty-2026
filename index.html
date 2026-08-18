@@ -46,13 +46,9 @@
       .table-wrap table{width:100%!important;min-width:0!important;table-layout:fixed}
       .table-wrap th,.table-wrap td{padding:8px 4px;font-size:9px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;word-break:break-word}
       .table-wrap th:nth-child(n+6),.table-wrap td:nth-child(n+6){display:none}
-      .assistant-dock{right:10px;bottom:118px;max-height:calc(100dvh - 174px);overflow:auto}
-      .assistant-dock.mobile-collapsed{width:58px;max-height:none;overflow:visible}
-      .assistant-dock.mobile-collapsed .assistant-dock-head{display:block;padding:0}
-      .assistant-dock.mobile-collapsed .assistant-dock-head>img,.assistant-dock.mobile-collapsed .assistant-dock-head>.assistant-fallback,.assistant-dock.mobile-collapsed .assistant-dock-head>div,.assistant-dock.mobile-collapsed .assistant-call-grid,.assistant-dock.mobile-collapsed .assistant-dock-note,.assistant-dock.mobile-collapsed [data-a="assistant-toggle"]{display:none}
-      .assistant-mobile-toggle{display:none!important}
-      .assistant-dock.mobile-collapsed .assistant-mobile-toggle{display:grid!important;place-items:center;width:56px!important;min-width:56px!important;height:54px!important;min-height:54px!important;padding:0!important;font-size:10px!important}
-      .assistant-dock:not(.mobile-collapsed) .assistant-mobile-toggle{display:none!important}
+      .assistant-dock{right:10px;top:108px;bottom:auto;width:min(310px,calc(100vw - 20px));max-height:calc(100dvh - 224px);overflow:auto}
+      .assistant-dock.mobile-collapsed{display:none}
+      .assistant-mobile-top-toggle{display:grid!important;place-items:center;min-width:46px!important;min-height:34px!important;padding:6px 7px!important;background:#d6ad55!important;color:#14251f!important;font-size:9px!important;font-weight:950!important}
       .assistant-dock-head{grid-template-columns:44px minmax(0,1fr) auto}
       .assistant-dock-head img,.assistant-dock-head .assistant-fallback{width:44px;height:44px}
       .assistant-dock-head b{font-size:11px}.assistant-dock-head span{font-size:8px;line-height:1.35}
@@ -1318,8 +1314,8 @@ function ensureCore(){if(!S)return;S.squad=Array.isArray(S.squad)&&S.squad.lengt
     if(innerWidth>720||S?.stage!=='game')return;
     const dock=root.querySelector('.assistant-dock');if(!dock)return;
     dock.classList.toggle('mobile-collapsed',!S.executive?.mobileOpen);
-    const head=dock.querySelector('.assistant-dock-head');
-    if(head&&!head.querySelector('[data-a="assistant-mobile-toggle"]'))head.insertAdjacentHTML('beforeend','<button class="btn gold assistant-mobile-toggle" data-a="assistant-mobile-toggle">비서</button>');
+    const actions=root.querySelector('.top-actions');
+    if(actions&&!actions.querySelector('[data-a="assistant-mobile-toggle"]'))actions.insertAdjacentHTML('afterbegin','<button class="btn assistant-mobile-top-toggle" data-a="assistant-mobile-toggle">비서</button>');
   }
   const renderBeforeMobileAssistant=render;
   render=()=>{renderBeforeMobileAssistant();mountMobileAssistantControls();};
